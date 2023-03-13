@@ -54,7 +54,7 @@ class ControlPanel extends StatelessWidget {
         ),
         IconButton(
           onPressed: onHandToggle,
-          icon: Icon(handEnabled == null || handEnabled! ? Icons.back_hand : Icons.back_hand_outlined),
+          icon: Icon(handEnabled! ? Icons.back_hand : Icons.back_hand_outlined),
           color: Colors.white,
           iconSize: 32,
         ),

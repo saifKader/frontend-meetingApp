@@ -183,13 +183,6 @@ class _MeetingPageState extends State<MeetingPage> {
       goToHomePage();
     }
   }
-  void onHandToggle() {
-    if (meetingHelper != null) {
-      setState(() {
-        meetingHelper!.toggleHand();
-      });
-    }
-  }
 
 
   _buildMeetingRoom() {
@@ -227,7 +220,13 @@ class _MeetingPageState extends State<MeetingPage> {
       ],
     );
   }
-
+  void onHandToggle() {
+    if (meetingHelper != null) {
+      setState(() {
+        meetingHelper!.toggleHand();
+      });
+    }
+  }
   void onAudioToggle() {
     if (meetingHelper != null) {
       setState(() {
@@ -258,7 +257,7 @@ class _MeetingPageState extends State<MeetingPage> {
     return meetingHelper != null ? meetingHelper!.videoEnabled! : false;
   }
   bool isHandEnabled() {
-    return meetingHelper != null ? meetingHelper!.handEnabled! : false;
+    return meetingHelper != null ? meetingHelper!.handEnabled! : true;
   }
 
   void goToHomePage() {
