@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc_wrapper/flutter_webrtc_wrapper.dart';
 import 'package:meetingtest/pages/home_screen.dart';
 import 'package:meetingtest/utils/user.utils.dart';
-import 'package:meetingtest/widgets/control_panel.dart';
 import 'package:meetingtest/widgets/remote_connection.dart';
 
 import '../models/meeting_details.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+
+import '../widgets/control_panel.dart';
 
 class MeetingPage extends StatefulWidget {
   final String? meetingId;
@@ -41,13 +42,15 @@ class _MeetingPageState extends State<MeetingPage> {
           isConnectionFailed: isConnectionFailed,
           onReconnect: handleReconnect,
           onMeetingEnd: onMeetingEnd,
+            onHandToggle: onHandToggle,
+          handEnabled: isHandEnabled(),
         ));
   }
 
   void startMeeting() async {
     final String userId = await loadUserId();
     meetingHelper = WebRTCMeetingHelper(
-      url: 'http://192.168.1.13:3003',
+      url: 'http://192.168.0.13:3003',
       meetingId: widget.meetingDetail.id,
       userId: userId,
       name: widget.name,
@@ -61,7 +64,6 @@ class _MeetingPageState extends State<MeetingPage> {
       context,
       (ev, context) {
         setState(() {
-          isConnectionFailed = false;
         });
       },
     );
@@ -70,16 +72,16 @@ class _MeetingPageState extends State<MeetingPage> {
       context,
       (ev, context) {
         setState(() {
-          isConnectionFailed = false;
         });
       },
     );
     meetingHelper!.on(
       'user-left',
       context,
-      (ev, context) {
+          (ev, context) {
         setState(() {
-          isConnectionFailed = false;
+          print('user-left');
+          onMeetingEnd();
         });
       },
     );
@@ -98,10 +100,21 @@ class _MeetingPageState extends State<MeetingPage> {
       },
     );
     meetingHelper!.on(
+      'hand-toggle',
+      context,
+        (ev, context) {
+      setState(() {
+        print('hand-toggle');
+        onHandToggle();
+      });
+        }
+    );
+    meetingHelper!.on(
       'meeting-ended',
       context,
       (ev, context) {
         setState(() {
+          print('meeting-ended');
           onMeetingEnd();
         });
       },
@@ -111,7 +124,6 @@ class _MeetingPageState extends State<MeetingPage> {
       context,
       (ev, context) {
         setState(() {
-          isConnectionFailed = true;
         });
       },
     );
@@ -120,7 +132,6 @@ class _MeetingPageState extends State<MeetingPage> {
       context,
       (ev, context) {
         setState(() {
-          isConnectionFailed = true;
         });
       },
     );
@@ -148,6 +159,23 @@ class _MeetingPageState extends State<MeetingPage> {
     }
   }
 
+  /*void onMeetingEnd() {
+    if (meetingHelper != null) {
+      bool isHost = widget.meetingDetail.hostId == meetingHelper!.userId;
+      if (isHost) {
+        // End the meeting for all participants
+        meetingHelper!.endMeeting();
+        meetingHelper = null;
+        goToHomePage();
+      } else {
+        // End the meeting only for the participant who left
+        meetingHelper!.leave();
+        meetingHelper = null;
+        goToHomePage();
+        Navigator.pop(context);
+      }
+    }
+  }*/
   void onMeetingEnd() {
     if (meetingHelper != null) {
       meetingHelper!.endMeeting();
@@ -155,6 +183,14 @@ class _MeetingPageState extends State<MeetingPage> {
       goToHomePage();
     }
   }
+  void onHandToggle() {
+    if (meetingHelper != null) {
+      setState(() {
+        meetingHelper!.toggleHand();
+      });
+    }
+  }
+
 
   _buildMeetingRoom() {
     return Stack(
@@ -220,6 +256,9 @@ class _MeetingPageState extends State<MeetingPage> {
 
   bool isVideoEnabled() {
     return meetingHelper != null ? meetingHelper!.videoEnabled! : false;
+  }
+  bool isHandEnabled() {
+    return meetingHelper != null ? meetingHelper!.handEnabled! : false;
   }
 
   void goToHomePage() {
